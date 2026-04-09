@@ -114,14 +114,37 @@ npx prisma init --datasource-provider sqlite
 npm i @prisma/client @prisma/adapter-libsql @libsql/client dotenv
 ```
 
+- Add ` importFileExtension = "js"` to let prisma use extension node js can use
+
 - Create a `Food` model in `schema.prisma`
 
-```prisma
+```py
 model Food {
   id String @id @default(cuid(2))
   name String
   amount Int
 }
+```
+
+### Your final schema.prisma should look like this
+
+```py
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Food {
+  id     String @id @default(cuid(2))
+  name   String
+  amount Int
+}
+
 ```
 
 - Run migrate & generate
