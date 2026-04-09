@@ -210,9 +210,7 @@ app.listen(port, () => {
 
 - Add Get Root Route:
 
-```ts
-GET /
-```
+- GET /
 
 ```ts
 app.get("/", (_req, res: Response) => {
@@ -232,9 +230,7 @@ import prisma from "./lib/db.js";
 
 ### Get All Foods
 
-```ts
-GET / foods;
-```
+- GET / foods;
 
 ```ts
 app.get("/foods", async (_req, res: Response) => {
@@ -245,9 +241,7 @@ app.get("/foods", async (_req, res: Response) => {
 
 ### Add Food
 
-```ts
-POST / foods;
-```
+- POST / foods;
 
 ```ts
 app.post("/foods", async (req: Request, res: Response) => {
@@ -276,9 +270,7 @@ app.post("/foods", async (req: Request, res: Response) => {
 
 ### Update Food
 
-```ts
-PUT /foods/:id
-```
+- PUT /foods/:id
 
 #### Allow partial updates
 
@@ -324,9 +316,7 @@ app.put("/foods/:id", async (req: Request, res: Response) => {
 
 ### Delete Food
 
-```ts
-DELETE /foods/:id
-```
+- DELETE /foods/:id
 
 ```ts
 app.delete("/foods/:id", async (req: Request, res: Response) => {
@@ -343,7 +333,7 @@ app.delete("/foods/:id", async (req: Request, res: Response) => {
 });
 ```
 
-## Your final index.ts should look something like
+## Your final index.ts should look something like this
 
 ```ts
 import express, { Request, Response } from "express";
