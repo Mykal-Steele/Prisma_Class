@@ -26,60 +26,34 @@
 
 ```py
 npm init -y
-npm i -D typescript tsx prisma
+npm i -D typescript tsx @types/node prisma
 npx tsc --init
 ````
 
 # Configure TypeScript (`tsconfig.json`)
 
-* Uncomment:
-
-  * `"rootDir": "./src"` (line ~5) // remove `src` from here
-  * `"outDir": "./dist",` (line ~6)
-
-* Add Node types:
-
-```json
-"types": ["node"]
-```
-
-* Remove:
-
-  * line ~19 `// "sourceMap": true,`
-  * line ~20 `// "declaration": true,`
-  * line ~21 `// "declarationMap": true,`
-  * line ~25 `// "exactOptionalPropertyTypes": true,`
-  * line ~37 `// "jsx": "react-jsx",`
-  * line ~38 `// "verbatimModuleSyntax": true,`
-  * line ~40 `// "noUncheckedSideEffectImports": true,`
-
-* Outside of the first curly bracket, add include & exclude:
-
-```json
-"include": ["./src/**/*", "prisma.config.ts"],
-"exclude": ["node_modules", "dist"]
-```
-
-## Your tsconfig.json should look like this
+* Replace your tsconfig.json with following code into your ts.config.json
 
 ```json
 {
   "compilerOptions": {
     "rootDir": "./",
     "outDir": "./dist",
-    "module": "nodenext",
-    "target": "esnext",
+    "module": "esnext",
     "types": ["node"],
-    "noUncheckedIndexedAccess": true,
+    "moduleResolution": "bundler",
+    "target": "ES2023",
     "strict": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true
+    "esModuleInterop": true
   },
   "include": ["./src/**/*", "prisma.config.ts"],
-  "exclude": ["node_modules", "./dist"]
+  "exclude": ["node_modules", "dist"]
 }
 ```
+Since we are using TypeScript, we need to configure it to match our setup. \
+Prisma 7 uses a more modern system, so using `esnext` for the module and `ES2023` as the target works well. \
+Setting `moduleResolution` to `bundler` follows a more modern approach for handling modules in TypeScript projects. \
+We also enable `esModuleInterop` to make imports more consistent and easier to work with.
 
 # Update `package.json`
 
@@ -104,7 +78,7 @@ npx tsc --init
 ```css
 mkdir src
 ```
-
+Make sure you create the `src` folder before initializing Prisma so it can configure everything properly.
 # Setup Prisma
 
 * Run init
@@ -119,7 +93,7 @@ npx prisma init --datasource-provider sqlite
 npm i @prisma/client @prisma/adapter-libsql @libsql/client dotenv
 ```
 
-* Inside `prisma/schema.prisma` file, add `importFileExtension = "js"` inside `generator client {}` to let Prisma use the extension Node.js can use
+* Inside the `prisma/schema.prisma` file, add `importFileExtension = "js"` inside the `generator client {}` block so Prisma generates files with a `.js` extension that Node.js can use
 
 ```py
 generator client {
@@ -128,6 +102,7 @@ generator client {
   importFileExtension = "js"
 }
 ```
+
 
 * Create a `Food` model in `schema.prisma`
 
@@ -159,19 +134,20 @@ model Food {
 }
 ```
 
-* Run migrate & generate
+* Run migrate dev & generate
 
 ```css
 npx prisma migrate dev --name init
 npx prisma generate
 ```
+`migrate dev` applies your schema changes and all existing migration history (if any) to the database. \
+`prisma generate` creates the client you will use in your application to interact with the database.
 
 * Add `prisma.config.ts` to the `tsconfig.json` include
 
 ```json
 "include": ["./src/**/*", "prisma.config.ts"],
 ```
-
 # Database Setup
 
 * Create folder `lib` inside `src`
@@ -185,6 +161,7 @@ mkdir src/lib
 ```css
 code src/lib/db.ts
 ```
+- Note: If these commands don't work for you, you can create the necessary folders and files using your interface.
 
 ### Inside db.ts
 
@@ -197,7 +174,7 @@ code src/lib/db.ts
 
 ```ts
 import { PrismaLibSql } from "@prisma/adapter-libsql";
-import { PrismaClient } from "../generated/prisma/client.js";
+import { PrismaClient } from "../generated/prisma/client";
 import "dotenv/config";
 const connectionString = process.env.DATABASE_URL || "file:./dev.db";
 
@@ -223,7 +200,6 @@ code src/index.ts
 
 * Initialize Express
 * Listen on a port (from `.env`)
-* Import prisma from `./lib/db.js`
 
 ```ts
 import express, { Request, Response } from "express";
@@ -251,7 +227,7 @@ app.get("/", (_req, res: Response) => {
 * Inside `src/index.ts`, import Prisma from `db.ts`
 
 ```ts
-import prisma from "./lib/db.js";
+import prisma from "./lib/db";
 ```
 
 ## Write APIs to create, update, read, and delete items from the database
