@@ -32,12 +32,12 @@ npx tsc --init
 
 # Configure TypeScript (`tsconfig.json`)
 
-* Replace your tsconfig.json with following code into your ts.config.json
+### Replace your tsconfig.json with following code into your ts.config.json
 
 ```json
 {
   "compilerOptions": {
-    "rootDir": "./",
+    "rootDir": "./src",
     "outDir": "./dist",
     "module": "esnext",
     "types": ["node"],
@@ -46,7 +46,7 @@ npx tsc --init
     "strict": true,
     "esModuleInterop": true
   },
-  "include": ["./src/**/*", "prisma.config.ts"],
+  "include": ["./src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
 ```
@@ -57,7 +57,7 @@ We also enable `esModuleInterop` to make imports more consistent and easier to w
 
 # Update `package.json`
 
-* Replace your `scripts` in `package.json` with this:
+### Replace your `scripts` in `package.json` with this:
 
 ```json
 "scripts": {
@@ -67,7 +67,7 @@ We also enable `esModuleInterop` to make imports more consistent and easier to w
 },
 ```
 
-* Change type to module:
+### Change type to module:
 
 ```json
 "type": "module"
@@ -81,19 +81,42 @@ mkdir src
 Make sure you create the `src` folder before initializing Prisma so it can configure everything properly.
 # Setup Prisma
 
-* Run init
+### Run init
 
 ```css
 npx prisma init --datasource-provider sqlite
 ```
 
-* Install dependencies
+### Install dependencies
 
 ```css
 npm i @prisma/client @prisma/adapter-libsql @libsql/client dotenv
 ```
+### Inside the `prisma.config.ts` add this line at the top
+```ts
+  /// <reference types="node"/>
+```
+So the final `prisma.config.ts` would look like this
+```ts
+/// <reference types="node"/>
+import "dotenv/config";
+import { defineConfig } from "prisma/config";
 
-* Inside the `prisma/schema.prisma` file, add `importFileExtension = "js"` inside the `generator client {}` block so Prisma generates files with a `.js` extension that Node.js can use
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  migrations: {
+    path: "prisma/migrations",
+  },
+  datasource: {
+    url: process.env["DATABASE_URL"],
+  },
+});
+
+```
+Because by default, TypeScript doesn’t know about Node.js globals(like process.env) unless you explicitly include its type definitions.
+
+### Inside the `prisma/schema.prisma` file, add `importFileExtension = "js"` inside the `generator client {}` block 
+
 
 ```py
 generator client {
@@ -102,9 +125,10 @@ generator client {
   importFileExtension = "js"
 }
 ```
+This is to make sure that Prisma generates files with a `.js` extension that Node.js can use
 
 
-* Create a `Food` model in `schema.prisma`
+### Create a `Food` model in `schema.prisma`
 
 ```py
 model Food {
@@ -134,7 +158,7 @@ model Food {
 }
 ```
 
-* Run migrate dev & generate
+### Run migrate dev & generate
 
 ```css
 npx prisma migrate dev --name init
@@ -143,20 +167,15 @@ npx prisma generate
 `migrate dev` applies your schema changes and all existing migration history (if any) to the database. \
 `prisma generate` creates the client you will use in your application to interact with the database.
 
-* Add `prisma.config.ts` to the `tsconfig.json` include
-
-```json
-"include": ["./src/**/*", "prisma.config.ts"],
-```
 # Database Setup
 
-* Create folder `lib` inside `src`
+### Create folder `lib` inside `src`
 
 ```css
 mkdir src/lib
 ```
 
-* Create `db.ts` inside `./src/lib`
+### Create `db.ts` inside `./src/lib`
 
 ```css
 code src/lib/db.ts
@@ -170,7 +189,7 @@ code src/lib/db.ts
 * Import `dotenv/config`
 * Handle the database connection, use the LibSQL adapter, and export a Prisma client to use in the app
 
-## Your db.ts should look something like this
+### Your db.ts should look something like this
 
 ```ts
 import { PrismaLibSql } from "@prisma/adapter-libsql";
@@ -196,10 +215,8 @@ npm i express @types/express
 code src/index.ts
 ```
 
-## Inside index.ts create a basic server
-
-* Initialize Express
-* Listen on a port (from `.env`)
+### Inside index.ts create an Express Server
+- Listen on a port (from `.env`) and use express.json()
 
 ```ts
 import express, { Request, Response } from "express";
@@ -214,7 +231,8 @@ app.listen(port, () => {
 });
 ```
 
-* Add get root route:
+### Add GET / route:
+- So your server stops complaining `Cannot GET /`
 
 ```ts
 app.get("/", (_req, res: Response) => {
@@ -224,7 +242,7 @@ app.get("/", (_req, res: Response) => {
 
 # Prisma + API
 
-* Inside `src/index.ts`, import Prisma from `db.ts`
+### Inside `src/index.ts`, import Prisma from `db.ts`
 
 ```ts
 import prisma from "./lib/db";
