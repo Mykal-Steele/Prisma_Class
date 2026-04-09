@@ -1,3 +1,4 @@
+
 # Overview - Summary
 
 ## Stack
@@ -27,35 +28,37 @@
 npm init -y
 npm i -D typescript tsx prisma
 npx tsc --init
-```
+````
 
 # Configure TypeScript (`tsconfig.json`)
 
-- Uncomment:
-  - `"rootDir": "./src"` (line ~5) - // remove `src` from here
-  - `"outDir": "./dist",` (line ~6)
+* Uncomment:
 
-- Add Node types:
+  * `"rootDir": "./src"` (line ~5) // remove `src` from here
+  * `"outDir": "./dist",` (line ~6)
 
-  ```json
-  "types": ["node"]
-  ```
+* Add Node types:
 
-- Remove:
-  - line ~19 `// "sourceMap": true, `
-  - line ~20 `// "declaration": true, `
-  - line ~21 `// "declarationMap": true, `
-  - line ~25 `// "exactOptionalPropertyTypes": true,`
-  - line ~37 `// "jsx": "react-jsx", `
-  - line ~38 `// "verbatimModuleSyntax": true,`
-  - line ~40 `//  "noUncheckedSideEffectImports": true,`
+```json
+"types": ["node"]
+```
 
-- Add include & exclude:
+* Remove:
 
-  ```json
-  "include": ["./src/**/*", "prisma.config.ts"],
-  "exclude": ["node_modules", "dist"]
-  ```
+  * line ~19 `// "sourceMap": true,`
+  * line ~20 `// "declaration": true,`
+  * line ~21 `// "declarationMap": true,`
+  * line ~25 `// "exactOptionalPropertyTypes": true,`
+  * line ~37 `// "jsx": "react-jsx",`
+  * line ~38 `// "verbatimModuleSyntax": true,`
+  * line ~40 `// "noUncheckedSideEffectImports": true,`
+
+* Outside of the first curly bracket, add include & exclude:
+
+```json
+"include": ["./src/**/*", "prisma.config.ts"],
+"exclude": ["node_modules", "dist"]
+```
 
 ## Your tsconfig.json should look like this
 
@@ -80,23 +83,23 @@ npx tsc --init
 
 # Update `package.json`
 
-- Replace your `scripts` in `package.json` with this:
+* Replace your `scripts` in `package.json` with this:
 
-  ```json
-   "scripts": {
-    "dev": "tsx watch ./src/index.ts",
-    "build": "tsc",
-    "start": "node ./dist/src/index.js"
-  },
-  ```
+```json
+"scripts": {
+  "dev": "tsx watch ./src/index.ts",
+  "build": "tsc",
+  "start": "node ./dist/src/index.js"
+},
+```
 
-- Set module type:
+* Change type to module:
 
-  ```json
-  "type": "module"
-  ```
+```json
+"type": "module"
+```
 
-# Create Source(src) folder
+# Create Source (src) folder
 
 ```css
 mkdir src
@@ -104,21 +107,29 @@ mkdir src
 
 # Setup Prisma
 
-- Run init
+* Run init
 
 ```css
 npx prisma init --datasource-provider sqlite
 ```
 
-- Install dependencies
+* Install dependencies
 
 ```css
 npm i @prisma/client @prisma/adapter-libsql @libsql/client dotenv
 ```
 
-- Add ` importFileExtension = "js"` to let prisma use extension node js can use
+* Inside `prisma/schema.prisma` file, add `importFileExtension = "js"` inside `generator client {}` to let Prisma use the extension Node.js can use
 
-- Create a `Food` model in `schema.prisma`
+```py
+generator client {
+  provider            = "prisma-client"
+  output              = "../generated/prisma"
+  importFileExtension = "js"
+}
+```
+
+* Create a `Food` model in `schema.prisma`
 
 ```py
 model Food {
@@ -146,26 +157,41 @@ model Food {
   name   String
   amount Int
 }
-
 ```
 
-- Run migrate & generate
+* Run migrate & generate
 
 ```css
 npx prisma migrate dev --name init
 npx prisma generate
 ```
 
-- Add `prisma.config.ts` to the `tsconfig.json` include:
-  `"include": ["./src/**/*", "prisma.config.ts"],`
+* Add `prisma.config.ts` to the `tsconfig.json` include
+
+```json
+"include": ["./src/**/*", "prisma.config.ts"],
+```
 
 # Database Setup
 
-- Create `db.ts` inside `./src/lib`
-- Import PrismaClient from `../generated/prisma/client.js`
-- Import PrismaLibSql from `@prisma/adapter-libsql`
-- Import `dotenv/config`
-- Handle the database connection, use the LibSQL adapter, and export a Prisma client to use in the app
+* Create folder `lib` inside `src`
+
+```css
+mkdir src/lib
+```
+
+* Create `db.ts` inside `./src/lib`
+
+```css
+code src/lib/db.ts
+```
+
+### Inside db.ts
+
+* Import PrismaClient from `../generated/prisma/client.js`
+* Import PrismaLibSql from `@prisma/adapter-libsql`
+* Import `dotenv/config`
+* Handle the database connection, use the LibSQL adapter, and export a Prisma client to use in the app
 
 ## Your db.ts should look something like this
 
@@ -187,13 +213,17 @@ export default prisma;
 npm i express @types/express
 ```
 
-- Create `./src/index.ts`
+### Create `./src/index.ts`
 
-## Basic Server
+```css
+code src/index.ts
+```
 
-- Initialize Express
-- Listen on a port (from `.env`)
-- Import prisma from `./lib/db.js`
+## Inside index.ts create a basic server
+
+* Initialize Express
+* Listen on a port (from `.env`)
+* Import prisma from `./lib/db.js`
 
 ```ts
 import express, { Request, Response } from "express";
@@ -208,9 +238,7 @@ app.listen(port, () => {
 });
 ```
 
-- Add Get Root Route:
-
-- GET /
+* Add get root route:
 
 ```ts
 app.get("/", (_req, res: Response) => {
@@ -220,17 +248,17 @@ app.get("/", (_req, res: Response) => {
 
 # Prisma + API
 
-- Import Prisma from `db.ts`
+* Inside `src/index.ts`, import Prisma from `db.ts`
 
 ```ts
 import prisma from "./lib/db.js";
 ```
 
-## Routes
+## Write APIs to create, update, read, and delete items from the database
 
 ### Get All Foods
 
-- GET / foods;
+* GET `/foods`
 
 ```ts
 app.get("/foods", async (_req, res: Response) => {
@@ -241,7 +269,7 @@ app.get("/foods", async (_req, res: Response) => {
 
 ### Add Food
 
-- POST / foods;
+* POST `/foods`
 
 ```ts
 app.post("/foods", async (req: Request, res: Response) => {
@@ -265,42 +293,20 @@ app.post("/foods", async (req: Request, res: Response) => {
 });
 ```
 
-- Validate input
-- Handle missing or invalid data
+* Validate input
+* Handle missing or invalid data
 
 ### Update Food
 
-- PUT /foods/:id
-
-#### Allow partial updates
+* PUT `/foods/:id`
 
 ```ts
 app.put("/foods/:id", async (req: Request, res: Response) => {
   const id = String(req.params.id);
   const data = req.body;
-  try {
-    const updatedFood = await prisma.food.update({
-      where: { id },
-      data: data,
-    });
-    res.status(200).json(updatedFood);
-  } catch (err: any) {
-    console.log("Error updating: ", err.message);
-    return res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-```
-
-#### Don't allow partial updates
-
-```ts
-app.put("/foods/:id", async (req: Request, res: Response) => {
-  const id = String(req.params.id);
-  const data = req.body;
-  if (data.name == null)
-    return res.status(400).json({ err: "name is required" });
-  if (data.amount == null)
-    return res.status(400).json({ err: "Amount is required" });
+  // Uncomment to disallow partial updates
+  // if (data.name == null) return res.status(400).json({ err: "name is required" });
+  // if (data.amount == null) return res.status(400).json({ err: "Amount is required" });
   try {
     const updatedFood = await prisma.food.update({
       where: { id },
@@ -316,7 +322,7 @@ app.put("/foods/:id", async (req: Request, res: Response) => {
 
 ### Delete Food
 
-- DELETE /foods/:id
+* DELETE `/foods/:id`
 
 ```ts
 app.delete("/foods/:id", async (req: Request, res: Response) => {
@@ -372,10 +378,9 @@ app.post("/foods", async (req: Request, res: Response) => {
 app.put("/foods/:id", async (req: Request, res: Response) => {
   const id = String(req.params.id);
   const data = req.body;
-  if (data.name == null)
-    return res.status(400).json({ err: "name is required" });
-  if (data.amount == null)
-    return res.status(400).json({ err: "Amount is required" });
+  // Uncomment to disallow partial updates
+  // if (data.name == null) return res.status(400).json({ err: "name is required" });
+  // if (data.amount == null) return res.status(400).json({ err: "Amount is required" });
   try {
     const updatedFood = await prisma.food.update({
       where: { id },
@@ -404,7 +409,9 @@ app.delete("/foods/:id", async (req: Request, res: Response) => {
 app.get("/", (_req, res: Response) => {
   res.send("Hello World");
 });
+
 app.listen(port, () => {
   console.log("Server is running on http://localhost:%d", port);
 });
 ```
+
