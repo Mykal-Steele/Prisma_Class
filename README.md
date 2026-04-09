@@ -193,7 +193,7 @@ code src/lib/db.ts
 
 ```ts
 import { PrismaLibSql } from "@prisma/adapter-libsql";
-import { PrismaClient } from "../generated/prisma/client";
+import { PrismaClient } from "../generated/prisma/client.js";
 import "dotenv/config";
 const connectionString = process.env.DATABASE_URL || "file:./dev.db";
 
@@ -245,7 +245,7 @@ app.get("/", (_req, res: Response) => {
 ### Inside `src/index.ts`, import Prisma from `db.ts`
 
 ```ts
-import prisma from "./lib/db";
+import prisma from "./lib/db.js";
 ```
 
 ## Write APIs to create, update, read, and delete items from the database
