@@ -34,10 +34,9 @@ app.post("/foods", async (req: Request, res: Response) => {
 app.put("/foods/:id", async (req: Request, res: Response) => {
   const id = String(req.params.id);
   const data = req.body;
-  if (data.name == null)
-    return res.status(400).json({ err: "name is required" });
-  if (data.amount == null)
-    return res.status(400).json({ err: "Amount is required" });
+  // Uncomment to disallow partial updates
+  // if (data.name == null) return res.status(400).json({ err: "name is required" });
+  // if (data.amount == null) return res.status(400).json({ err: "Amount is required" });
   try {
     const updatedFood = await prisma.food.update({
       where: { id },
@@ -66,6 +65,7 @@ app.delete("/foods/:id", async (req: Request, res: Response) => {
 app.get("/", (_req, res: Response) => {
   res.send("Hello World");
 });
+
 app.listen(port, () => {
   console.log("Server is running on http://localhost:%d", port);
 });
