@@ -80,12 +80,14 @@ npx tsc --init
 
 # Update `package.json`
 
-- Add dev script:
+- Replace your `scripts` in `package.json` with this:
 
   ```json
-  "scripts": {
-    "dev": "tsx watch ./src/index.ts"
-  }
+   "scripts": {
+    "dev": "tsx watch ./src/index.ts",
+    "build": "tsc",
+    "start": "node ./dist/src/index.js"
+  },
   ```
 
 - Set module type:
