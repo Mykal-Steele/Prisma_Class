@@ -1,8 +1,8 @@
 import express, { Request, Response } from "express";
 import "dotenv/config";
-import prisma from "@/libs/db.js";
+import prisma from "./lib/db.js";
 const app = express();
-const port = process.env.PORT;
+const port = process.env.PORT || "3000";
 
 app.use(express.json());
 
@@ -15,7 +15,7 @@ app.post("/foods", async (req: Request, res: Response) => {
   try {
     const { name, amount } = req.body;
 
-    if (!name || !amount)
+    if (!name || amount == null)
       return res.status(400).json({ err: "Name or Amount is required" });
     if (typeof amount !== "number")
       return res.status(400).json({ err: "Amount needs to be a number" });
@@ -34,8 +34,10 @@ app.post("/foods", async (req: Request, res: Response) => {
 app.put("/foods/:id", async (req: Request, res: Response) => {
   const id = String(req.params.id);
   const data = req.body;
-  if (!data.name) return res.status(400).json({ err: "name is required" });
-  if (!data.amount) return res.status(400).json({ err: "Amount is required" });
+  if (data.name == null)
+    return res.status(400).json({ err: "name is required" });
+  if (data.amount == null)
+    return res.status(400).json({ err: "Amount is required" });
   try {
     const updatedFood = await prisma.food.update({
       where: { id },
