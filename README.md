@@ -1,3 +1,25 @@
+# Overview - Summary
+
+## Stack
+
+- Express with Typescript
+- Prisma 7.7.0
+- LibSql Adapter for Prisma
+
+## APIs
+
+- Create an Item `/foods`
+- Get All Item `/foods`
+- Update an Item `/foods/:id`
+- Delete an item `/foods/:id`
+
+## Scope
+
+- Database connection with new Prisma 7 system and LibSql Adapter
+- Express Typescript setup
+- Basic Crud with Prisma Sqlite database
+
+# Tutorial Flow
 
 # Setup Project
 
@@ -5,27 +27,25 @@
 npm init -y
 npm i -D typescript tsx prisma
 npx tsc --init
-````
+```
 
 # Configure TypeScript (`tsconfig.json`)
 
-* Uncomment:
+- Uncomment:
+  - `"rootDir": "./src"` (line ~5) - // remove `src` from here
+  - `"outDir": "./dist",` (line ~6)
 
-  * `"rootDir": "./src"` (line ~5)  -  // remove `src` from here
-  * `"outDir": "./dist",` (line ~6)
-
-* Add Node types:
+- Add Node types:
 
   ```json
   "types": ["node"]
   ```
 
-* Comment out:
+- Comment out:
+  - line ~25 `// "exactOptionalPropertyTypes": true,`
+  - line ~38 `// "verbatimModuleSyntax": true,`
 
-  * line ~25 `// "exactOptionalPropertyTypes": true,`
-  * line ~38 ` // "verbatimModuleSyntax": true, `
-
-* Add path alias:
+- Add path alias:
 
   ```json
   "paths": {
@@ -33,7 +53,7 @@ npx tsc --init
   }
   ```
 
-* Add include & exclude:
+- Add include & exclude:
 
   ```json
   "include": ["./src/**/*"],
@@ -42,7 +62,7 @@ npx tsc --init
 
 # Update `package.json`
 
-* Add dev script:
+- Add dev script:
 
   ```json
   "scripts": {
@@ -50,7 +70,7 @@ npx tsc --init
   }
   ```
 
-* Set module type:
+- Set module type:
 
   ```json
   "type": "module"
@@ -64,16 +84,20 @@ mkdir src
 
 # Setup Prisma
 
-* Run Init
+- Run Init
+
 ```css
 npx prisma init --datasource-provider sqlite
 ```
-* Install dependencies
+
+- Install dependencies
+
 ```css
 npm i @prisma/client @prisma/adapter-libsql @libsql/client dotenv
 ```
 
-* Create a `Food` model in `schema.prisma`
+- Create a `Food` model in `schema.prisma`
+
 ```schema.prisma
 model Food {
   id String @id @default(cuid(2))
@@ -81,7 +105,9 @@ model Food {
   amount Int
 }
 ```
-* Run Migrate & Generate
+
+- Run Migrate & Generate
+
 ```css
 npx prisma migrate dev --name init
 npx prisma generate
@@ -89,11 +115,11 @@ npx prisma generate
 
 # Database Setup
 
-* Create `db.ts` inside `./src/lib`
-* Import PrismaClient using alias (`@`) from `./src/generated/prisma/client.js`
-* Import PrismaLibSql from `@prisma/adapter-libsql`
-* Import `dotenv/config`
-* Handle the database Connection, use the LibSql adapter, and export a Prisma client to use in the app
+- Create `db.ts` inside `./src/lib`
+- Import PrismaClient using alias (`@`) from `./src/generated/prisma/client.js`
+- Import PrismaLibSql from `@prisma/adapter-libsql`
+- Import `dotenv/config`
+- Handle the database Connection, use the LibSql adapter, and export a Prisma client to use in the app
 
 # Setup Express with TypeScript
 
@@ -101,13 +127,13 @@ npx prisma generate
 npm i express @types/express
 ```
 
-* Create `./src/index.ts`
+- Create `./src/index.ts`
 
 ## Basic Server
 
-* Initialize Express
-* Listen on a port (from `.env`)
-* Add route:
+- Initialize Express
+- Listen on a port (from `.env`)
+- Add route:
 
 ```ts
 GET /
@@ -116,24 +142,24 @@ send → "Hello World"
 
 # Prisma + API
 
-* Import Prisma from `db.ts`
+- Import Prisma from `db.ts`
 
 ## Routes
 
 ### Get All Foods
 
 ```ts
-GET /foods
+GET / foods;
 ```
 
 ### Add Food (Postman)
 
 ```ts
-POST /foods
+POST / foods;
 ```
 
-* Validate input
-* Handle missing or invalid data
+- Validate input
+- Handle missing or invalid data
 
 ### Update Food
 
@@ -141,7 +167,7 @@ POST /foods
 PATCH /foods/:id
 ```
 
-* Allow partial updates
+- Allow partial updates
 
 ### Delete Food
 
