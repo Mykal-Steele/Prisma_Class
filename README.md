@@ -6,6 +6,7 @@
 - Express with TypeScript
 - Prisma 7.7.0
 - LibSQL Adapter for Prisma
+- Morgan
 
 ## APIs
 
@@ -37,23 +38,25 @@ npx tsc --init
 ```json
 {
   "compilerOptions": {
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "module": "esnext",
-    "types": ["node"],
-    "moduleResolution": "bundler",
-    "target": "ES2023",
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "strict": true,
-    "esModuleInterop": true
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "outDir": "dist",
+    "rootDir": "src"
   },
-  "include": ["./src/**/*"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }
 ```
 Since we are using TypeScript, we need to configure it to match our setup. \
-Prisma 7 uses a more modern system, so using `esnext` for the module and `ES2023` as the target works well. \
-Setting `moduleResolution` to `bundler` follows a more modern approach for handling modules in TypeScript projects. \
-We also enable `esModuleInterop` to make imports more consistent and easier to work with.
+We use `NodeNext` for both `module` and `moduleResolution` to match Node.js's native ES module system. \
+`ES2022` as the target keeps the output compatible with modern Node.js versions. \
+`skipLibCheck` avoids errors from third-party type definitions, and `isolatedModules` ensures each file can be compiled independently.
 
 # Update `package.json`
 
@@ -115,17 +118,14 @@ export default defineConfig({
 ```
 Because by default, TypeScript doesn’t know about Node.js globals(like process.env) unless you explicitly include its type definitions.
 
-### Inside the `prisma/schema.prisma` file, add `importFileExtension = "js"` inside the `generator client {}` block 
-
+### Inside the `prisma/schema.prisma` file, configure the `generator client {}` block
 
 ```py
 generator client {
-  provider            = "prisma-client"
-  output              = "../generated/prisma"
-  importFileExtension = "js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 ```
-This is to make sure that Prisma generates files with a `.js` extension that Node.js can use
 
 
 ### Create a `Food` model in `schema.prisma`
@@ -142,9 +142,8 @@ model Food {
 
 ```py
 generator client {
-  provider            = "prisma-client"
-  output              = "../src/generated/prisma"
-  importFileExtension = "js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -175,21 +174,21 @@ npx prisma generate
 mkdir src/lib
 ```
 
-### Create `db.ts` inside `./src/lib`
+### Create `prisma.ts` inside `./src/lib`
 
 ```css
-code src/lib/db.ts
+code src/lib/prisma.ts
 ```
 - Note: If these commands don't work for you, you can create the necessary folders and files using your interface.
 
-### Inside db.ts
+### Inside prisma.ts
 
 * Import PrismaClient from `../generated/prisma/client.js`
 * Import PrismaLibSql from `@prisma/adapter-libsql`
 * Import `dotenv/config`
 * Handle the database connection, use the LibSQL adapter, and export a Prisma client to use in the app
 
-### Your db.ts should look something like this
+### Your prisma.ts should look something like this
 
 ```ts
 import { PrismaLibSql } from "@prisma/adapter-libsql";
@@ -206,7 +205,8 @@ export default prisma;
 # Setup Express with TypeScript
 
 ```css
-npm i express @types/express
+npm i express morgan
+npm i -D @types/morgan
 ```
 
 ### Create `./src/index.ts`
@@ -221,10 +221,12 @@ code src/index.ts
 ```ts
 import express, { Request, Response } from "express";
 import "dotenv/config";
+import morgan from "morgan";
 const app = express();
 const port = process.env.PORT || "3000";
 
 app.use(express.json());
+app.use(morgan("dev"));
 
 app.listen(port, () => {
   console.log("Server is running on http://localhost:%d", port);
@@ -242,10 +244,10 @@ app.get("/", (_req, res: Response) => {
 
 # Prisma + API
 
-### Inside `src/index.ts`, import Prisma from `db.ts`
+### Inside `src/index.ts`, import Prisma from `prisma.ts`
 
 ```ts
-import prisma from "./lib/db.js";
+import prisma from "./lib/prisma.js";
 ```
 
 ## Write APIs to create, update, read, and delete items from the database
@@ -338,11 +340,13 @@ app.delete("/foods/:id", async (req: Request, res: Response) => {
 ```ts
 import express, { Request, Response } from "express";
 import "dotenv/config";
-import prisma from "./lib/db.js";
+import morgan from "morgan";
+import prisma from "./lib/prisma.js";
 const app = express();
 const port = process.env.PORT || "3000";
 
 app.use(express.json());
+app.use(morgan("dev"));
 
 app.get("/foods", async (_req, res: Response) => {
   const food = await prisma.food.findMany();
